@@ -51,11 +51,15 @@ review  args.utest ()   Args.utest()  usage examples.
 
 ### License
 
-MIT License, free to change and redistribute, Just keep the credit.
+* MIT License, free to change and redistribute, Just keep the credit.
+* Any question or requests are welcome
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
 <p><a href="mailto:eli.shagam@gmail.com">eli.shagam@gmail.com</a></p>
+
+
+TechoPhil.com
 ~                                                                                      
 ~       
