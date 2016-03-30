@@ -2,8 +2,8 @@
 
 ###abstract
 
-trivial running speed benchmarks written in Java and c
-Many threads increment one static integer counter.
+* Trivial speed benchmarks written in Java and c
+* Many threads increment one static integer counter.
 
 ###usage
 
@@ -48,6 +48,10 @@ review  args.utest ()   Args.utest()  usage examples.
 <li>args.c                Argumet parser for c (MIT license)</li>
 <li>args.h</li>
 </ul>
+
+### License
+
+MIT License, free to change and redistribute, Just keep the credit.
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
