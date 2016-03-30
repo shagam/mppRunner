@@ -7,16 +7,14 @@ Many threads increment one static integer counter.
 
 ###usage
 
-java -jar dist/mpprunner.jar</li>
-java -jar dist/mpprunner.jar   [threads=32]  [iterations=1000000]  [verbose]</li>
+* java -jar dist/mpprunner.jar</li>
+* java -jar dist/mpprunner.jar   [threads=32]  [iterations=1000000]  [verbose]</li>
 
 c:
 
-
-make
-mppRunner
-
-mppRunner [threads=32]  [iterations=1000000]  [verbose] [loose] [atomic]
+* make
+* mppRunner
+* mppRunner [threads=32]  [iterations=1000000]  [verbose] [loose] [atomic]
 
 When running with no parameters, uses default parameters.
 
@@ -26,16 +24,16 @@ When running with no parameters, uses default parameters.
 Unique prefix of argument name is enough (No need to type full name).
 
 
-treads     - number of concurrent threads</li>
-iterations - loops</li>
-atomic     - c only, use hardware lock (faster)</li>
-oose      - c only, no lock, faster (wrong result)</li>
+* threads     - number of concurrent threads</li>
+* iterations - loops</li>
+* atomic     - c only, use hardware lock (faster)</li>
+* oose      - c only, no lock, faster (wrong result)</li>
 
 ###help
 
-When running with no parameters (Or with) help is printed.
-The help is created automatically.
-See Args.java args.c
+* When running with no parameters (Or with) help is printed.
+* The help is created automatically.
+* See Args.java args.c
 
 review  args.utest ()   Args.utest()  usage examples.
 
