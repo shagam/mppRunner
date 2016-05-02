@@ -29,13 +29,17 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #include "args.h"
 #include <string>
 #include <map>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 //#include <string.h>
 
 using namespace std;
 
 //static char * s_argv[];
 
-const int SIZ = 20;
+const int STR_MAX = 100;
 
 std::map<string,string> param_map;
 std::map<string,string> description_map;
@@ -82,7 +86,7 @@ int getBool (char const * name, int argc, const char * const argv[], char const 
 //            s_args = args;
     param_map.insert(std::pair<string,string>(name,BOOL));
     description_map.insert(std::pair<string,string>(name,description));    
-    for (int n = 0; n < argc; n++) {
+    for (int n = 1; n < argc; n++) {
         if (isContain(argv[n],'='))
             continue;    
         if (isPrefix (argv[n], name)) {           
@@ -115,10 +119,10 @@ int split (char const * name_value, char * name, char * value) {
 int getString (char const * param_name, int argc, const char * const argv[], char * res_value, char const * description) {
     param_map.insert(std::pair<string,string>(param_name,STRING));
     description_map.insert(std::pair<string,string>(param_name,description));     
-    for (int n = 0; n < argc; n++) {
+    for (int n = 1; n < argc; n++) {
         if (isContain (argv[n], '=')) {
-            char name [SIZ] = {0};
-            char value [SIZ] = {0};    
+            char name [STR_MAX] = {0};
+            char value [STR_MAX] = {0};    
 
             int res = split (argv[n], name, value);
             if (res = 0)
@@ -142,7 +146,7 @@ int getString (char const * param_name, int argc, const char * const argv[], cha
 
 int getInteger (char const * param_name, int argc, const char * const argv[], char const * description) {
     
-    char res_value [SIZ] = {0};
+    char res_value [STR_MAX] = {0};
     int res = getString (param_name, argc, argv, res_value, description);
     param_map.erase (param_name);
     param_map.insert (std::pair<string,string>(param_name,INT));
@@ -240,6 +244,35 @@ void formatIntUtest (void) {
     
 }
 
+// verify valid args
+const char * verify (int argc, const char * const argv[]) {
+    for (int nArg = 1; nArg < argc; nArg++) {
+        const char * nameValue = argv[nArg];
+        if (nameValue == NULL)
+            return NULL;       
+        char argName [STR_MAX] = {0};
+        char value[STR_MAX];
+        const char * e = strchr(nameValue, '=');
+        if (e == NULL) {
+            memcpy (argName, nameValue, strlen (nameValue));
+        }
+        else
+            int res = split (nameValue, argName, value);
+        int found = 0;
+        for(auto elem : param_map) {
+            const char * parameter = elem.first.c_str();
+
+            if (isPrefix (argName, parameter)) {
+                found = 1;
+                break;
+            }
+        }
+        if (! found)
+            return /* "  invalid param=" + */ argv[nArg];
+    }
+    return NULL;
+  
+}
 
 void utest () {
     
@@ -255,8 +288,8 @@ void utest () {
     
     //const int SIZ = 20;
     char name_value [] = "param=value";
-    char name [SIZ];
-    char value [SIZ];    
+    char name [STR_MAX];
+    char value [STR_MAX];    
     
     res = split (name_value, name, value);
     int nameLen = strlen(name);
@@ -270,7 +303,7 @@ void utest () {
                                        "fri", "sat", "sun" };
       
     static const char *const argv[] = {"nolock","pppp=4","cccc=8","param=123"};
-    char str_result [SIZ] = {0};
+    char str_result [STR_MAX] = {0};
 
     int argc = 1;
     res = getString ("ppppp", sizeof(argv), argv, str_result, "");
