@@ -6,18 +6,40 @@
 package mpprunner;
 
 import java.lang.*;
+import java.util.TreeMap;
+import java.util.Random;
 
 
 
+class SafeTree {
+    TreeMap <Integer, Integer> s_tree = new TreeMap<>();
+    
+    public synchronized void put (int key, int val) {
+        s_tree.put(key, val);
+    }
+    
+    public synchronized Integer get (int key) {
+        return s_tree.get(key);
+    }   
+
+    public Integer get_notSynchronized (int key) {
+        return s_tree.get(key);
+    }  
+
+}
 
 
 
 public class MppRunner extends java.lang.Thread {
     
-    static int s_threadCnt = 0;
-    static int s_iterations;
+    static int s_threadCnt;
+    static int s_loops = 0;
     static boolean s_verbose;
+    static boolean s_loose;
+    static boolean s_treeMapTest;
+    static SafeTree s_safeTree = new SafeTree();
     static volatile int s_sharedCounter = 0;
+    Random m_randomizer = new Random();  
     
     int m_id;
     int myCounter = 0;       
@@ -25,12 +47,6 @@ public class MppRunner extends java.lang.Thread {
     long curTime;
     long curTime2;
     
-    
-    //static 
-    /**
-     * @param args
-     * @throws InterruptedException 
-     */
     
     public MppRunner (int id){
         m_id = id;
@@ -57,11 +73,25 @@ public class MppRunner extends java.lang.Thread {
         if (s_threadCnt == Integer.MAX_VALUE)
             s_threadCnt = 32; // Runtime.getRuntime().availableProcessors();
 
-        s_iterations = Args.getInteger("iterations", args, "number of loops for each thread");
-        if (s_iterations == Integer.MAX_VALUE)
-            s_iterations = 1000000;
+        s_loops = Args.getInteger("loops", args, "number of loops for each thread");
+        if (s_loops == Integer.MAX_VALUE)
+            s_loops = 1000000;
 
         s_verbose = Args.getBool("verbose", args, "");
+        
+        s_loose = Args.getBool("loose", args, "without lock (Wrong result)");        
+
+        s_treeMapTest = Args.getBool("tree", args, "tree map");
+        
+        System.out.format("\ntreads=%d loops=%d treeMap=%s\n", s_threadCnt, s_loops, s_treeMapTest);
+                
+        if (s_treeMapTest) {
+            Random m_randomizer = new Random();            
+            for (int n = 0; n < s_loops; n++) {
+                int in = m_randomizer.nextInt(s_loops);
+                s_safeTree.put(in, in);
+            }                
+        }
         
         Args.showAndVerify (true);                    
 
@@ -89,15 +119,30 @@ public class MppRunner extends java.lang.Thread {
     @Override
     public void run(){
         curTime = System.currentTimeMillis();
-        for (int i = 0; i < s_iterations ;i++){
 
-            synchronized (this) {
+        if (s_treeMapTest) {
+            for (int i = 0; i < s_loops ;i++){
+                int in = m_randomizer.nextInt() % s_loops;
+                if (in < 0)
+                    in = 0 - in;
+                s_safeTree.get(in);
+            } 
+        }
+        else
+        if (s_loose) {
+            for (int i = 0; i < s_loops ;i++)
+                s_sharedCounter ++;
+        }
+        
+        else
+        for (int i = 0; i < s_loops ;i++){
             incCounter();
-//                SharedCounter ++;
+//            synchronized (this) {
+//                s_sharedCounter ++;
 //                myCounter = getCounter();
 //                myCounter += 1;
 //                setCounter(myCounter);
-            }
+//            }
         }
         curTime2 = System.currentTimeMillis();
         long exectime = curTime2 - curTime;
