@@ -77,7 +77,7 @@ public class MppRunner extends java.lang.Thread {
         if (s_loops == Integer.MAX_VALUE)
             s_loops = 1000000;
 
-        s_verbose = Args.getBool("verbose", args, "");
+        s_verbose = Args.getBool("verbose", args, "print thread start/stop");
         
         s_loose = Args.getBool("loose", args, "without lock (Wrong result)");        
 

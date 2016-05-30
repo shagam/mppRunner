@@ -59,11 +59,6 @@ public class Args {
         enumer,
     }
     
-//    public static void clear () {
-//        s_searchedParams.clear();
-//        s_err = null;
-//        s_args = null;
-//    }
 
     
     // search one formalParam in actual args
@@ -75,8 +70,12 @@ public class Args {
         s_descriptionMap.put (name, description);
         s_argType.add (ArgType.string);
         for (int n = 0; n < args.length; n++) {
-            if (args[n].contains("=")) {
-                String [] array = args[n].split("=");
+            // remove leading dashes
+            String arg = args[n];
+            if (arg.startsWith("--"))
+                arg = arg.substring(2);            
+            if (arg.contains("=")) {
+                String [] array = arg.split("=");
                 if (array.length != 2)
                     continue;
                 if (! matchPrefix (name, array[0]))
@@ -110,26 +109,6 @@ public class Args {
         }
     }
 
-    public static int search_int_value (String name, String [] args, String description) {
-        String strValue = getString (name, args, description);
-        s_argType.remove(s_argType.size() - 1);
-        s_argType.add (ArgType.integer);
-        s_descriptionMap.put (name, description);
-        if (strValue == null)
-            return Integer.MAX_VALUE;
-        
-        int val;
-        try {
-            val = Integer.parseInt(strValue, 10);
-            return val;
-        }
-        catch (NumberFormatException e) {
-            s_err = name + " invalid int";
-            System.err.print(name + " invalid int" );
-            return Integer.MAX_VALUE;
-        }
-    }
-
     public static boolean getBool (String name, String [] args, String description) {
         if (s_args == null)
             s_args = args;
@@ -138,9 +117,14 @@ public class Args {
         s_descriptionMap.put (name, description);
         s_argType.add (ArgType.bool);
         for (int n = 0; n < args.length; n++) {
-            if (matchPrefix(args[n], name)) {
-                if (args[n].contains("="))
-                    s_err = "misMatchType " + args[n];
+            // remove leading dashes
+            String arg = args[n];
+            if (arg.startsWith("--"))
+                arg = arg.substring(2);
+            
+            if (matchPrefix(arg, name)) {
+                if (arg.contains("="))
+                    s_err = "misMatchType " + arg;
                 return true;       
             }
         }
@@ -195,23 +179,6 @@ public class Args {
          }
      }
 
-   
-    public static boolean bool_exist (String name, String [] args, String description) {
-        if (s_args == null)
-            s_args = args;
-
-        checkDuplicatesAndAddToList (name);
-        s_descriptionMap.put (name, description);
-        s_argType.add (ArgType.bool);
-        for (int n = 0; n < args.length; n++) {
-            if (matchPrefix(args[n], name)) {
-                if (args[n].contains("="))
-                    s_err = "misMatchType " + args[n];
-                return true;       
-            }
-        }
-        return false;
-    }
     
     static void checkDuplicatesAndAddToList (String name) {
         String param = extractParam (name);
@@ -246,7 +213,7 @@ public class Args {
     }
    
     public static void showAndVerify (boolean help) {
- 
+        assert Args.s_err == null : s_err; 
         String txt = "";
 
         if (help) {
@@ -309,8 +276,10 @@ public class Args {
     public static String verifyArgs () {
         for (int nArg = 0; nArg < s_args.length; nArg++) {
             boolean found = false;
+            String arg = extractParam(s_args[nArg]);
+            if (arg.startsWith("--"))
+                arg = arg.substring(2);
             for (int param = 0; param < s_searchedParams.size(); param ++) {
-                String arg = extractParam(s_args[nArg]);
                 String parameter = s_searchedParams.get(param);
                 if (matchPrefix (parameter, arg)) {
                     found = true;
@@ -318,7 +287,7 @@ public class Args {
                 }
             }
             if (! found)
-                return "  invalid param=" + s_args[nArg];
+                return "  not found param=" + arg;
         }
         return null;
     }
@@ -332,6 +301,8 @@ public class Args {
     public static void verifyUnique () {
         for (int nArg = 0; nArg < s_args.length; nArg++) {
             String arg = s_args[nArg];
+            if (arg.startsWith("--"))
+                arg = arg.substring(2);
             String argName;
             if (arg.contains("=")) {
                 String [] array = arg.split("=");
@@ -361,13 +332,17 @@ public class Args {
     
     // utest can be used as a demo
     public static void utest () {
-        String [] args = {"th=7", "copy", "file=/var/js/blabla"};
+        String [] args = {"th=7", "test=copy", "file=/var/js/blabla", "verbose"};
 
-        boolean copy = Args.getBool ("copy", args, "test==copy_memory (measure bandwidth)");
-        assert copy;
+        // Args.getBool 
+        boolean verbose = Args.getBool ("verbose", args, "");
+        assert verbose;
+        
+        // Args.getString
         String file = Args.getString ("file", args, "file name");
         assert file != null;
         
+        // Args.getInteger
         int threadCount = -1;
         //Args.search_int_value("thredd", args, "number of concurrent threads");        
         int threads = Args.getInteger("threds", args, "number of concurrent threads");
@@ -377,6 +352,7 @@ public class Args {
             threadCount = Runtime.getRuntime().availableProcessors();
         assert threadCount == 7;
 
+        // Args.getEnum 
         String [] args1 = {"test=tre"};        
         String [] tests = {"tree","hash","queue","alloc","prime","queue","copy","count","noLock"};
         String test = Args.getEnum ("test", args, tests, tests, "test selection ");
